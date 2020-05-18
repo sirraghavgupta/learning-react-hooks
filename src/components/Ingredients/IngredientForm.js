@@ -33,7 +33,8 @@ const IngredientForm = React.memo((props) => {
    * so, we need to merge it on our own. and also as we are just using the
    * previous state in the new state, we must use an arrow function.
    */
-  const [inputState, setInputState] = useState({ title: "", amount: "" });
+  const [titleState, setTitleState] = useState({ title: "" });
+  const [amountState, setAmountState] = useState({ amount: "" });
 
   return (
     <section className="ingredient-form">
@@ -44,13 +45,9 @@ const IngredientForm = React.memo((props) => {
             <input
               type="text"
               id="title"
-              value={inputState.title}
+              value={titleState.title}
               onChange={(event) => {
-                const newTitle = event.target.value;
-                setInputState((prevState) => ({
-                  title: newTitle,
-                  amount: prevState.amount,
-                }));
+                setTitleState({ title: event.target.value });
               }}
             />
           </div>
@@ -60,13 +57,9 @@ const IngredientForm = React.memo((props) => {
             <input
               type="number"
               id="amount"
-              value={inputState.amount}
+              value={amountState.amount}
               onChange={(event) => {
-                const newAmount = event.target.value;
-                setInputState((prevState) => ({
-                  amount: newAmount,
-                  title: prevState.title,
-                }));
+                setAmountState({ amount: event.target.value });
               }}
             />
           </div>
