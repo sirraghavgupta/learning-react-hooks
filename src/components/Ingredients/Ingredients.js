@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import IngredientForm from "./IngredientForm";
 import IngredientList from "./IngredientList";
@@ -6,6 +6,23 @@ import Search from "./Search";
 
 function Ingredients() {
   const [ingredientsState, setIngredientsState] = useState([]);
+
+  useEffect(() => {
+    fetch("https://react-hooks-demo-app-b51ef.firebaseio.com/ingredients.json")
+      .then((response) => {
+        return response.json();
+      })
+      .then((responseData) => {
+        const loadedIngredients = Object.keys(responseData).map((key) => {
+          return {
+            id: key,
+            title: responseData[key].title,
+            amount: responseData[key].amount,
+          };
+        });
+        setIngredientsState(loadedIngredients);
+      });
+  }, []);
 
   // need to use const here, unlike the class component where we directly
   // write the function name.
