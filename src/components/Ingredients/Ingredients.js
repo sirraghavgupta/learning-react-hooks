@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 import IngredientForm from "./IngredientForm";
 import IngredientList from "./IngredientList";
@@ -7,6 +7,8 @@ import Search from "./Search";
 function Ingredients() {
   const [ingredientsState, setIngredientsState] = useState([]);
 
+  /*
+  // method removed as we are doing the same thing in the search component. 
   useEffect(() => {
     fetch("https://react-hooks-demo-app-b51ef.firebaseio.com/ingredients.json")
       .then((response) => {
@@ -22,7 +24,11 @@ function Ingredients() {
         });
         setIngredientsState(loadedIngredients);
       });
-  }, []);
+  }, []); */
+
+  useEffect(() => {
+    console.log("RENDERING INGREDIENTS", ingredientsState);
+  }, [ingredientsState]);
 
   // need to use const here, unlike the class component where we directly
   // write the function name.
@@ -56,12 +62,26 @@ function Ingredients() {
       });
   };
 
+  /**
+   * it will now memoize the function and will not re initialise it again
+   * and again.
+   * we need to mention the dependency also ans we can do that safely here,
+   * because react guarantees that the setState methods never change as they
+   * are managed by react only.
+   */
+  const onFilterHandler = useCallback(
+    (filteredIngredients) => {
+      setIngredientsState(filteredIngredients);
+    },
+    [setIngredientsState]
+  );
+
   return (
     <div className="App">
       <IngredientForm onAddIngredient={addIngredientHandler} />
 
       <section>
-        <Search />
+        <Search onLoadFilteredIngredients={onFilterHandler} />
         <IngredientList
           ingredients={ingredientsState}
           onRemoveItem={() => {}}
