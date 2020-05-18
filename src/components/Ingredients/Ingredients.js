@@ -76,6 +76,21 @@ function Ingredients() {
     [setIngredientsState]
   );
 
+  const removeIngredientHandler = (ingredientId) => {
+    fetch(
+      `https://react-hooks-demo-app-b51ef.firebaseio.com/ingredients/${ingredientId}.json`,
+      {
+        method: "DELETE",
+      }
+    ).then((response) => {
+      setIngredientsState((ingredientsState) => {
+        return ingredientsState.filter(
+          (ingredient) => ingredient.id !== ingredientId
+        );
+      });
+    });
+  };
+
   return (
     <div className="App">
       <IngredientForm onAddIngredient={addIngredientHandler} />
@@ -84,7 +99,7 @@ function Ingredients() {
         <Search onLoadFilteredIngredients={onFilterHandler} />
         <IngredientList
           ingredients={ingredientsState}
-          onRemoveItem={() => {}}
+          onRemoveItem={removeIngredientHandler}
         />
       </section>
     </div>
