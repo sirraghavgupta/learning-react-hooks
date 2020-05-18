@@ -19,11 +19,7 @@ const Search = React.memo((props) => {
    * awesome!!
    */
   useEffect(() => {
-    console.log("inside useEffect", searchKey);
     const timer = setTimeout(() => {
-      console.log("inside setTimeout - prev", searchKey);
-      console.log("inside setTimeout - curr", inputRef.current.value);
-
       /**
        * here, we need to use reference to get the current value. because
        * when i type something,  my setTimeout is setup. and the value at that
@@ -45,13 +41,15 @@ const Search = React.memo((props) => {
             return response.json();
           })
           .then((responseData) => {
-            const loadedIngredients = Object.keys(responseData).map((key) => {
-              return {
+            const loadedIngredients = [];
+            for (let key in responseData) {
+              loadedIngredients.push({
                 id: key,
                 title: responseData[key].title,
                 amount: responseData[key].amount,
-              };
-            });
+              });
+            }
+
             onLoadFilteredIngredients(loadedIngredients);
             // comments moved to EOF. - relate here.
           });
