@@ -4,11 +4,6 @@ import Card from "../UI/Card";
 import "./IngredientForm.css";
 
 const IngredientForm = React.memo((props) => {
-  const submitHandler = (event) => {
-    event.preventDefault();
-    // ...
-  };
-
   /**
    * in useStatem, we can passs anything like object, string, number, unlike the
    * state in class based components where wwe need object only.
@@ -32,9 +27,21 @@ const IngredientForm = React.memo((props) => {
    * useState doesnt merge the state with the old one, it re initialises that.
    * so, we need to merge it on our own. and also as we are just using the
    * previous state in the new state, we must use an arrow function.
+   *
+   * ====== RULES OF USING REACT HOOKS ======
+   * we need to use the hooks always at the root level of the functional
+   * component. not inside any if else block or not inside any function.
+   *
+   * also, we can use the hooks either inside the functional component or in
+   * the other custom hooks made by us.
    */
   const [titleState, setTitleState] = useState({ title: "" });
   const [amountState, setAmountState] = useState({ amount: "" });
+
+  const submitHandler = (event) => {
+    event.preventDefault();
+    props.onAddIngredient({ ...titleState, ...amountState });
+  };
 
   return (
     <section className="ingredient-form">
