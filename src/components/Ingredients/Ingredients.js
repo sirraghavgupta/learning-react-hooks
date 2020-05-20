@@ -1,12 +1,29 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useReducer, useEffect, useCallback } from "react";
 
 import IngredientForm from "./IngredientForm";
 import IngredientList from "./IngredientList";
 import Search from "./Search";
 import ErrorModal from "../UI/ErrorModal";
 
+const ingredientReducer = (currentState, action) => {
+  switch (action.type) {
+    case "SET":
+      return action.ingredients;
+    case "ADD":
+      return [...currentState, action.ingredient];
+    case "DELETE":
+      return currentState.filter(
+        (ingredient) => ingredient.id !== action.ingredientId
+      );
+    default:
+      throw new Error("should not reach here.");
+  }
+};
+
 function Ingredients() {
-  const [ingredientsState, setIngredientsState] = useState([]);
+  const [ingredientsState, dispatch] = useReducer(ingredientReducer, []);
+
+  // const [ingredientsState, setIngredientsState] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -60,10 +77,14 @@ function Ingredients() {
         return response.json();
       })
       .then((responseData) => {
-        setIngredientsState((prevState) => [
-          ...prevState,
-          { id: responseData.name, ...ingredient },
-        ]);
+        // setIngredientsState((prevState) => [
+        //   ...prevState,
+        //   { id: responseData.name, ...ingredient },
+        // ]);
+        dispatch({
+          type: "ADD",
+          ingredient: { id: responseData.name, ...ingredient },
+        });
       });
   };
 
@@ -76,26 +97,27 @@ function Ingredients() {
    */
   const onFilterHandler = useCallback(
     (filteredIngredients) => {
-      setIngredientsState(filteredIngredients);
+      dispatch({ type: "SET", ingredients: filteredIngredients });
     },
-    [setIngredientsState]
+    [dispatch]
   );
 
   const removeIngredientHandler = (ingredientId) => {
     setLoading(true);
     fetch(
-      `https://react-hooks-demo-app-b51ef.firebaseio.com/ingredients/${ingredientId}.jon`,
+      `https://react-hooks-demo-app-b51ef.firebaseio.com/ingredients/${ingredientId}.json`,
       {
         method: "DELETE",
       }
     )
       .then((response) => {
         setLoading(false);
-        setIngredientsState((ingredientsState) => {
-          return ingredientsState.filter(
-            (ingredient) => ingredient.id !== ingredientId
-          );
-        });
+        // setIngredientsState((ingredientsState) => {
+        //   return ingredientsState.filter(
+        //     (ingredient) => ingredient.id !== ingredientId
+        //   );
+        // });
+        dispatch({ type: "DELETE", ingredientId: ingredientId });
       })
       .catch((error) => {
         console.log(error);
@@ -128,3 +150,26 @@ function Ingredients() {
 }
 
 export default Ingredients;
+
+/**
+ * ============ useReducer() ============
+ * when we need to set multiple related state together like 
+ *   setLoading(false);
+     setError(error.message);
+   it works fine here because of react state batching feature. 
+
+   but sometimes it happens that our state depends on other state 
+   objects also, then it becomes a little messy. 
+   there we have a better alternative. useReducer().
+  
+   [ it may seem similar to the redux reducer but it has no connection 
+  with that. ]
+
+  so, we make a function which takes 2params, one is the initial state and 
+  the other is the action object. we need to register it with the useReducer 
+  hook. and it again returns an array which contains the actual state and a 
+  method which we may call 'dispatch'. it also takes the initial state as the 
+  argument. 
+  the useReducer will re render the component whenever our state will change. 
+  
+ */
