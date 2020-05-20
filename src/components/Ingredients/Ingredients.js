@@ -16,7 +16,8 @@ const ingredientReducer = (currentState, action) => {
         (ingredient) => ingredient.id !== action.ingredientId
       );
     default:
-      throw new Error("should not reach here.");
+      return currentState;
+    // throw new Error("should not reach here.");
   }
 };
 
@@ -31,7 +32,8 @@ const httpReducer = (currHttpState, action) => {
     case "CLEAR":
       return { ...currHttpState, error: null };
     default:
-      throw new Error("should not reach here.");
+      return currHttpState;
+    // throw new Error("should not reach here.");
   }
 };
 
