@@ -6,6 +6,7 @@ import Search from "./Search";
 
 function Ingredients() {
   const [ingredientsState, setIngredientsState] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   /*
   // method removed as we are doing the same thing in the search component. 
@@ -43,6 +44,7 @@ function Ingredients() {
      * when we get the response, we also need to unpack it by using .json() on that.
      * it also returns a promise, so we use another then block.
      */
+    setLoading(true);
     fetch(
       "https://react-hooks-demo-app-b51ef.firebaseio.com/ingredients.json",
       {
@@ -52,6 +54,7 @@ function Ingredients() {
       }
     )
       .then((response) => {
+        setLoading(false);
         return response.json();
       })
       .then((responseData) => {
@@ -77,12 +80,14 @@ function Ingredients() {
   );
 
   const removeIngredientHandler = (ingredientId) => {
+    setLoading(true);
     fetch(
       `https://react-hooks-demo-app-b51ef.firebaseio.com/ingredients/${ingredientId}.json`,
       {
         method: "DELETE",
       }
     ).then((response) => {
+      setLoading(false);
       setIngredientsState((ingredientsState) => {
         return ingredientsState.filter(
           (ingredient) => ingredient.id !== ingredientId
@@ -93,7 +98,10 @@ function Ingredients() {
 
   return (
     <div className="App">
-      <IngredientForm onAddIngredient={addIngredientHandler} />
+      <IngredientForm
+        onAddIngredient={addIngredientHandler}
+        showSpinner={loading}
+      />
 
       <section>
         <Search onLoadFilteredIngredients={onFilterHandler} />
