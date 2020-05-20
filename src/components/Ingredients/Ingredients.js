@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect, useCallback } from "react";
+import React, { useReducer, useEffect, useCallback, useMemo } from "react";
 
 import IngredientForm from "./IngredientForm";
 import IngredientList from "./IngredientList";
@@ -73,7 +73,7 @@ function Ingredients() {
 
   // need to use const here, unlike the class component where we directly
   // write the function name.
-  const addIngredientHandler = (ingredient) => {
+  const addIngredientHandler = useCallback((ingredient) => {
     /**
      * fetch is not a react feature, its inbuilt into the browser.
      * it by default always makes a get request, so for post request, we need
@@ -109,7 +109,7 @@ function Ingredients() {
           ingredient: { id: responseData.name, ...ingredient },
         });
       });
-  };
+  }, []);
 
   /**
    * it will now memoize the function and will not re initialise it again
@@ -125,7 +125,7 @@ function Ingredients() {
     [dispatch]
   );
 
-  const removeIngredientHandler = (ingredientId) => {
+  const removeIngredientHandler = useCallback((ingredientId) => {
     // setLoading(true);
     dispatchHttp({ type: "SEND" });
     fetch(
@@ -150,12 +150,32 @@ function Ingredients() {
         // setError(error.message);
         dispatchHttp({ type: "ERROR" });
       });
-  };
+  }, []);
 
-  const clearError = () => {
+  const clearError = useCallback(() => {
     // setError(null);
     dispatchHttp({ type: "CLEAR" });
-  };
+  }, []);
+
+  /**
+   * to increase performance, we have 2 methods. one is react memo and one
+   * is useMemo().
+   * If we use useCallback, we definitely need to use the React.memo().
+   *
+   * useMemo is a hook by whcih we can memoize anything, a component
+   * or may be a value. for component, we prefer React.memo() bbut if there is a
+   * complex value which we dont want to be calculated everytime to save time,
+   * we need useMemo then.
+   */
+  const ingredientList = useMemo(
+    () => (
+      <IngredientList
+        ingredients={ingredientsState}
+        onRemoveItem={removeIngredientHandler}
+      />
+    ),
+    [ingredientsState, removeIngredientHandler]
+  );
 
   return (
     <div className="App">
@@ -169,10 +189,7 @@ function Ingredients() {
 
       <section>
         <Search onLoadFilteredIngredients={onFilterHandler} />
-        <IngredientList
-          ingredients={ingredientsState}
-          onRemoveItem={removeIngredientHandler}
-        />
+        {ingredientList}
       </section>
     </div>
   );
