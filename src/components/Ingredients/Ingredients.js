@@ -1,4 +1,4 @@
-import React, { useState, useReducer, useEffect, useCallback } from "react";
+import React, { useReducer, useEffect, useCallback } from "react";
 
 import IngredientForm from "./IngredientForm";
 import IngredientList from "./IngredientList";
@@ -20,12 +20,31 @@ const ingredientReducer = (currentState, action) => {
   }
 };
 
+const httpReducer = (currHttpState, action) => {
+  switch (action.type) {
+    case "SEND":
+      return { loading: true, error: null };
+    case "RESPONSE":
+      return { ...currHttpState, loading: false };
+    case "ERROR":
+      return { loading: false, error: action.error };
+    case "CLEAR":
+      return { ...currHttpState, error: null };
+    default:
+      throw new Error("should not reach here.");
+  }
+};
+
 function Ingredients() {
   const [ingredientsState, dispatch] = useReducer(ingredientReducer, []);
+  const [httpState, dispatchHttp] = useReducer(httpReducer, {
+    loading: false,
+    error: null,
+  });
 
   // const [ingredientsState, setIngredientsState] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  // const [loading, setLoading] = useState(false);
+  // const [error, setError] = useState(null);
 
   /*
   // method removed as we are doing the same thing in the search component. 
@@ -63,7 +82,8 @@ function Ingredients() {
      * when we get the response, we also need to unpack it by using .json() on that.
      * it also returns a promise, so we use another then block.
      */
-    setLoading(true);
+    // setLoading(true);
+    dispatchHttp({ type: "SEND" });
     fetch(
       "https://react-hooks-demo-app-b51ef.firebaseio.com/ingredients.json",
       {
@@ -73,7 +93,8 @@ function Ingredients() {
       }
     )
       .then((response) => {
-        setLoading(false);
+        // setLoading(false);
+        dispatchHttp({ type: "RESPONSE" });
         return response.json();
       })
       .then((responseData) => {
@@ -103,7 +124,8 @@ function Ingredients() {
   );
 
   const removeIngredientHandler = (ingredientId) => {
-    setLoading(true);
+    // setLoading(true);
+    dispatchHttp({ type: "SEND" });
     fetch(
       `https://react-hooks-demo-app-b51ef.firebaseio.com/ingredients/${ingredientId}.json`,
       {
@@ -111,31 +133,36 @@ function Ingredients() {
       }
     )
       .then((response) => {
-        setLoading(false);
+        // setLoading(false);
+        dispatchHttp({ type: "RESPONSE" });
         // setIngredientsState((ingredientsState) => {
         //   return ingredientsState.filter(
-        //     (ingredient) => ingredient.id !== ingredientId
+        //     (ingredient) => ingredient.id !== i  ngredientId
         //   );
         // });
         dispatch({ type: "DELETE", ingredientId: ingredientId });
       })
       .catch((error) => {
         console.log(error);
-        setLoading(false);
-        setError(error.message);
+        // setLoading(false);
+        // setError(error.message);
+        dispatchHttp({ type: "ERROR" });
       });
   };
 
   const clearError = () => {
-    setError(null);
+    // setError(null);
+    dispatchHttp({ type: "CLEAR" });
   };
 
   return (
     <div className="App">
-      {error && <ErrorModal onClose={clearError}>{error}</ErrorModal>}
+      {httpState.error && (
+        <ErrorModal onClose={clearError}>{httpState.error}</ErrorModal>
+      )}
       <IngredientForm
         onAddIngredient={addIngredientHandler}
-        showSpinner={loading}
+        showSpinner={httpState.loading}
       />
 
       <section>
@@ -171,5 +198,14 @@ export default Ingredients;
   method which we may call 'dispatch'. it also takes the initial state as the 
   argument. 
   the useReducer will re render the component whenever our state will change. 
-  
+
+
+  ADDON - 
+  we can include the reducer method inside the component also if we are 
+  using props inside that. but here, we want to prevent unnecesary re 
+  initialization of the reducer method. 
+
+  finally we conclude that useREducer is just a way to clean up the code 
+  if we have multiple related states to manage and they have complex operations. 
+  so that we have all the logic within one place only. 
  */
