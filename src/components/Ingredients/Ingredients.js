@@ -3,10 +3,12 @@ import React, { useState, useEffect, useCallback } from "react";
 import IngredientForm from "./IngredientForm";
 import IngredientList from "./IngredientList";
 import Search from "./Search";
+import ErrorModal from "../UI/ErrorModal";
 
 function Ingredients() {
   const [ingredientsState, setIngredientsState] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   /*
   // method removed as we are doing the same thing in the search component. 
@@ -82,22 +84,33 @@ function Ingredients() {
   const removeIngredientHandler = (ingredientId) => {
     setLoading(true);
     fetch(
-      `https://react-hooks-demo-app-b51ef.firebaseio.com/ingredients/${ingredientId}.json`,
+      `https://react-hooks-demo-app-b51ef.firebaseio.com/ingredients/${ingredientId}.jon`,
       {
         method: "DELETE",
       }
-    ).then((response) => {
-      setLoading(false);
-      setIngredientsState((ingredientsState) => {
-        return ingredientsState.filter(
-          (ingredient) => ingredient.id !== ingredientId
-        );
+    )
+      .then((response) => {
+        setLoading(false);
+        setIngredientsState((ingredientsState) => {
+          return ingredientsState.filter(
+            (ingredient) => ingredient.id !== ingredientId
+          );
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+        setLoading(false);
+        setError(error.message);
       });
-    });
+  };
+
+  const clearError = () => {
+    setError(null);
   };
 
   return (
     <div className="App">
+      {error && <ErrorModal onClose={clearError}>{error}</ErrorModal>}
       <IngredientForm
         onAddIngredient={addIngredientHandler}
         showSpinner={loading}
